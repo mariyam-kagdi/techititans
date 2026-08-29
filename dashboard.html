@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Command Center</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --secure-color: #00ff41;
+            --alert-color: #ff003c;
+            --grid-color-secure: rgba(0, 255, 65, 0.05);
+            --grid-color-alert: rgba(255, 0, 60, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            transition: background-color 0.1s;
+        }
+
+        /* Techy Grid Background */
+        .grid-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                linear-gradient(var(--grid-color-secure) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color-secure) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -2;
+            transition: background-image 0.3s;
+        }
+
+        /* CRT Scanline Effect */
+        .scanlines {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .dashboard-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+        }
+
+        /* Status Display */
+        .status-box {
+            padding: 3rem 4rem;
+            border: 2px solid var(--secure-color);
+            border-radius: 10px;
+            background: rgba(0, 20, 0, 0.6);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.2), inset 0 0 20px rgba(0, 255, 65, 0.2);
+            text-align: center;
+            margin-bottom: 3rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .status-box::before {
+            content: 'SYSTEM STATUS';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: var(--bg-color);
+            padding: 0 10px;
+            font-size: 0.8rem;
+            color: var(--secure-color);
+            letter-spacing: 2px;
+            transition: color 0.3s;
+        }
+
+        .status-text {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: var(--secure-color);
+            text-shadow: 0 0 15px var(--secure-color);
+            margin: 0;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+
+        /* Attack Button */
+        .attack-btn {
+            background: transparent;
+            border: 2px solid var(--alert-color);
+            color: var(--alert-color);
+            padding: 1rem 3rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            font-family: inherit;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .attack-btn:hover {
+            background: var(--alert-color);
+            color: #fff;
+            box-shadow: 0 0 20px var(--alert-color);
+        }
+
+        .attack-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ----------------------------------
+           ALERT MODE (Triggered by JS)
+           ---------------------------------- */
+        
+        body.alert-mode {
+            animation: bg-flash 0.8s infinite alternate;
+        }
+
+        body.alert-mode .grid-overlay {
+            background-image: 
+                linear-gradient(var(--grid-color-alert) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color-alert) 1px, transparent 1px);
+        }
+
+        body.alert-mode .status-box {
+            border-color: var(--alert-color);
+            background: rgba(40, 0, 0, 0.8);
+            box-shadow: 0 0 50px rgba(255, 0, 60, 0.4), inset 0 0 40px rgba(255, 0, 60, 0.3);
+            animation: box-shake 0.4s infinite;
+        }
+
+        body.alert-mode .status-box::before {
+            color: var(--alert-color);
+        }
+
+        body.alert-mode .status-text {
+            color: #ffffff;
+            text-shadow: 0 0 20px var(--alert-color), 0 0 40px var(--alert-color);
+        }
+
+        body.alert-mode .attack-btn {
+            border-color: var(--secure-color);
+            color: var(--secure-color);
+        }
+
+        body.alert-mode .attack-btn:hover {
+            background: var(--secure-color);
+            color: #111;
+            box-shadow: 0 0 20px var(--secure-color);
+        }
+
+        /* Animations */
+        @keyframes bg-flash {
+            0% { background-color: #050000; }
+            100% { background-color: #2a0005; }
+        }
+
+        @keyframes box-shake {
+            0% { transform: translate(0, 0); }
+            20% { transform: translate(-3px, 2px); }
+            40% { transform: translate(3px, -2px); }
+            60% { transform: translate(-3px, -2px); }
+            80% { transform: translate(3px, 2px); }
+            100% { transform: translate(0, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="grid-overlay"></div>
+    <div class="scanlines"></div>
+
+    <div class="dashboard-container">
+        <div class="status-box" id="status-box">
+            <h1 class="status-text" id="status-text">🟢 SECURE: System Intact</h1>
+        </div>
+
+        <button class="attack-btn" id="attack-btn">Trigger Attack</button>
+    </div>
+
+    <script>
+        const attackBtn = document.getElementById('attack-btn');
+        const statusText = document.getElementById('status-text');
+        const body = document.body;
+
+        let isSecure = true;
+
+        attackBtn.addEventListener('click', () => {
+            if (isSecure) {
+                // Trigger Attack Mode
+                body.classList.add('alert-mode');
+                statusText.innerText = '🔴 CRITICAL ALERT: UNAUTHORIZED KEY SWAP DETECTED!';
+                attackBtn.innerText = 'Restore System';
+                isSecure = false;
+            } else {
+                // Restore Secure Mode
+                body.classList.remove('alert-mode');
+                statusText.innerText = '🟢 SECURE: System Intact';
+                attackBtn.innerText = 'Trigger Attack';
+                isSecure = true;
+            }
+        });
+    </script>
+</body>
+</html>
